@@ -24,16 +24,8 @@
         <div class="clock" id="headerClock">--:--</div>
       </div>
     </header>
-    
+
     <section class="controls">
-      <div class="control-block">
-        <div class="control-label">日付</div>
-        <div class="tabs" id="dayTabs" role="group" aria-label="日付">
-          <button type="button" data-value="weekday" aria-pressed="false">平日</button>
-          <button type="button" data-value="saturday" aria-pressed="false">土曜</button>
-          <button type="button" data-value="vacationWeekday" aria-pressed="false">休業平日</button>
-        </div>
-      </div>
       <div class="control-block">
         <div class="control-label">方向</div>
         <div class="tabs" id="directionTabs" role="group" aria-label="方向">
@@ -47,9 +39,8 @@
       </div>
     </section>
 
-    <section class="card">
+    <section class="card" id="timetableCard">
       <button class="expand-btn" id="expandBtn" type="button" aria-expanded="false" aria-controls="fullList">一覧</button>
-
 
       <div class="next">
         <div class="label">次のバス</div>
@@ -69,7 +60,14 @@
             <div class="full-title">全便一覧</div>
             <div class="full-sub" id="fullListSub"></div>
           </div>
-          <button class="close-btn" id="closeListBtn" type="button">閉じる</button>
+        </div>
+        <div class="full-controls">
+          <div class="control-label">日付</div>
+          <div class="tabs" id="dayTabs" role="group" aria-label="日付">
+            <button type="button" data-value="weekday" aria-pressed="false">平日</button>
+            <button type="button" data-value="saturday" aria-pressed="false">土曜</button>
+            <button type="button" data-value="vacationWeekday" aria-pressed="false">休業平日</button>
+          </div>
         </div>
         <div class="full-body" id="fullListBody"></div>
       </div>
@@ -79,14 +77,9 @@
 
     <div class="control-label">情報は<a href="https://www.dendai.ac.jp/access/saitama_hatoyama/school_bus.html">2025年4月1日改正ダイヤ（大学公式サイト）</a>に基づいています。<br>
       作った人: <a href="https://x.com/startail____">おみやげ（@startail____）</a>
-    </div>  </main>
+    </div>
+  </main>
 
   <script src="app.js"></script>
 </body>
 </html>
-
-
-
-
-
-

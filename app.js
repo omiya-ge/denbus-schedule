@@ -102,6 +102,7 @@ const fullListEl = document.getElementById("fullList");
 const fullListSubEl = document.getElementById("fullListSub");
 const fullListBodyEl = document.getElementById("fullListBody");
 const closeListBtnEl = document.getElementById("closeListBtn");
+const timetableCardEl = document.getElementById("timetableCard");
 const headerClockEl = document.getElementById("headerClock");
 const nextTimeEl = document.getElementById("nextTime");
 const nextMetaEl = document.getElementById("nextMeta");
@@ -167,10 +168,16 @@ const resolveDayKey = (mode) => {
   return null;
 };
 
-// 現在の曜日から適切な日付モードを決定
+// 現在の曜日から適切な日付モードを決定（22時以降は翌日のダイヤを表示）
 const getDefaultDayMode = (now) => {
-  if (isVacationDate(now)) return "vacationWeekday";
-  const dow = now.getDay();
+  let checkDate = new Date(now);
+  // 22:00以降は翌日のダイヤを表示
+  if (now.getHours() >= 22) {
+    checkDate.setDate(checkDate.getDate() + 1);
+  }
+  
+  if (isVacationDate(checkDate)) return "vacationWeekday";
+  const dow = checkDate.getDay();
   if (dow === 6) return "saturday";
   if (dow === 0) return "sunday";
   return "weekday";
@@ -178,6 +185,10 @@ const getDefaultDayMode = (now) => {
 
 // 現在時刻から適切な方向を決定
 const getDefaultDirectionMode = (now) => {
+  // 22時以降は翌日のダイヤなので「大学に行く」を返す
+  if (now.getHours() >= 22) {
+    return "toUni";
+  }
   const minutes = now.getHours() * 60 + now.getMinutes();
   return minutes < DIRECTION_SWITCH_MINUTES ? "toUni" : "fromUni";
 };
@@ -259,7 +270,7 @@ const updateRoutes = (now = new Date()) => {
 };
 
 // 次3便のリストをレンダリング
-const renderUpcomingList = (times, nowMinutes) => {
+const renderUpcomingList = (times, nowMinutes, isNextDay = false) => {
   if (!times.length) {
     upcomingListEl.innerHTML = '<div class="mini-empty">--</div>';
     return;
@@ -267,7 +278,11 @@ const renderUpcomingList = (times, nowMinutes) => {
 
   upcomingListEl.innerHTML = times
     .map((time) => {
-      const diff = parseMinutes(time) - nowMinutes;
+      let diff = parseMinutes(time) - nowMinutes;
+      // 22時以降は翌日なので24時間足す
+      if (isNextDay) {
+        diff += 24 * 60;
+      }
       return `
         <div class="mini-item">
           <div class="mini-time">${time}</div>
@@ -287,7 +302,7 @@ const buildFullList = (state, forceScroll) => {
   const dayLabel = DAY_LABELS[state.dayMode] || "日曜";
   const directionLabel = DIRECTION_LABELS[state.direction] || "";
 
-  fullListSubEl.textContent = `${dayLabel} / ${directionLabel} / ${state.route}`;
+  // fullListSubEl.textContent = `${dayLabel} / ${directionLabel} / ${state.route}`;
 
   if (!state.dayKey) {
     fullListBodyEl.innerHTML = '<div class="full-empty">日曜・祝日のデータは未登録です</div>';
@@ -335,7 +350,7 @@ const buildFullList = (state, forceScroll) => {
   }
 };
 
-// 全便一覧モーダルを開く
+// 全便一覧を開く
 const openFullList = () => {
   if (!lastRenderState) {
     render();
@@ -344,35 +359,40 @@ const openFullList = () => {
   fullListEl.classList.add("open");
   fullListEl.setAttribute("aria-hidden", "false");
   expandBtnEl.setAttribute("aria-expanded", "true");
-  document.body.classList.add("modal-open");
-
+  expandBtnEl.textContent = "戻る";
+  if (timetableCardEl) {
+    timetableCardEl.classList.add("list-mode");
+  }
   if (lastRenderState) {
     lastFullListKey = makeStateKey(lastRenderState);
     buildFullList(lastRenderState, true);
   }
 };
 
-// 全便一覧モーダルを閉じる
+// 全便一覧を閉じる
 const closeFullList = () => {
   isExpanded = false;
   fullListEl.classList.remove("open");
   fullListEl.setAttribute("aria-hidden", "true");
   expandBtnEl.setAttribute("aria-expanded", "false");
-  document.body.classList.remove("modal-open");
-};
-
-// モーダル背景クリック時に一覧を閉じる
-const handleBackdropClick = (event) => {
-  if (event.target === fullListEl) {
-    closeFullList();
+  expandBtnEl.textContent = "一覧";
+  if (timetableCardEl) {
+    timetableCardEl.classList.remove("list-mode");
   }
 };
 
 // 画面全体をレンダリング
 const render = () => {
   const now = new Date();
-  const dayMode = getDayMode(now);
-  const dayKey = resolveDayKey(dayMode);
+  
+  // 次のバス表示用：常に実際の曜日を使用（22時以降は翌日）
+  const actualDayMode = getDefaultDayMode(now);
+  const actualDayKey = resolveDayKey(actualDayMode);
+  
+  // 一覧表示用：ユーザーが選択した日付を使用
+  const selectedDayMode = getDayMode(now);
+  const selectedDayKey = resolveDayKey(selectedDayMode);
+  
   const direction = getDirectionMode();
   let route = getActiveValue(routeTabsEl);
 
@@ -381,48 +401,60 @@ const render = () => {
     route = updated.route;
   }
 
-  const dayLabel = DAY_LABELS[dayMode] || "日曜";
+  // 次のバス表示用のデータ（実際の曜日ベース）
+  const timesForNext = getTimes(actualDayKey, direction, route);
+  
+  // 実際の現在時刻（差分計算用）
+  const actualNowMinutes = now.getHours() * 60 + now.getMinutes();
+  
+  // 22時以降は翌日のダイヤなので、フィルタリング時は0時から開始
+  let filterNowMinutes = actualNowMinutes;
+  const isNextDay = now.getHours() >= 22;
+  if (isNextDay) {
+    filterNowMinutes = 0; // 翌日のダイヤなので、最初から比較
+  }
+  
+  const upcomingForNext = timesForNext.filter((t) => parseMinutes(t) >= filterNowMinutes);
 
-  const times = getTimes(dayKey, direction, route);
-  const nowMinutes = now.getHours() * 60 + now.getMinutes();
-  const upcoming = times.filter((t) => parseMinutes(t) >= nowMinutes);
-
-  if (!dayKey) {
+  if (!actualDayKey) {
     nextTimeEl.textContent = "--:--";
     nextMetaEl.textContent = "日曜・祝日のデータは未登録です";
     upcomingListEl.innerHTML = '<div class="mini-empty">--</div>';
     notesEl.textContent = "";
-    lastRenderState = { dayMode, dayKey, direction, route, times, upcoming, nowMinutes };
-    if (isExpanded) {
-      buildFullList(lastRenderState, true);
-    }
-    return;
-  }
-
-  if (!times.length) {
+  } else if (!timesForNext.length) {
     nextTimeEl.textContent = "--:--";
     nextMetaEl.textContent = "この日は運転がありません";
     upcomingListEl.innerHTML = '<div class="mini-empty">--</div>';
     notesEl.textContent = "";
-    lastRenderState = { dayMode, dayKey, direction, route, times, upcoming, nowMinutes };
-    if (isExpanded) {
-      buildFullList(lastRenderState, true);
-    }
-    return;
-  }
-
-  if (!upcoming.length) {
+  } else if (!upcomingForNext.length) {
     nextTimeEl.textContent = "本日終了";
     nextMetaEl.textContent = "終バス後です";
-    renderUpcomingList([], nowMinutes);
+    renderUpcomingList([], actualNowMinutes, isNextDay);
   } else {
-    nextTimeEl.textContent = upcoming[0];
-    const diff = parseMinutes(upcoming[0]) - nowMinutes;
+    nextTimeEl.textContent = upcomingForNext[0];
+    // 差分計算：22時以降は翌日なので24時間足す
+    let diff = parseMinutes(upcomingForNext[0]) - actualNowMinutes;
+    if (isNextDay) {
+      diff += 24 * 60; // 翌日なので24時間足す
+    }
     nextMetaEl.textContent = `あと${formatRemaining(diff)}`;
-    renderUpcomingList(upcoming.slice(1, 4), nowMinutes);
+    renderUpcomingList(upcomingForNext.slice(1, 4), actualNowMinutes, isNextDay);
   }
 
-  lastRenderState = { dayMode, dayKey, direction, route, times, upcoming, nowMinutes };
+  // 一覧表示用のデータ（ユーザーが選択した日付ベース）
+  const timesForList = getTimes(selectedDayKey, direction, route);
+  const nowMinutesForList = now.getHours() * 60 + now.getMinutes();
+  const upcomingForList = timesForList.filter((t) => parseMinutes(t) >= nowMinutesForList);
+
+  lastRenderState = { 
+    dayMode: selectedDayMode, 
+    dayKey: selectedDayKey, 
+    direction, 
+    route, 
+    times: timesForList, 
+    upcoming: upcomingForList, 
+    nowMinutes: nowMinutesForList
+  };
 
   if (isExpanded) {
     const key = makeStateKey(lastRenderState);
@@ -468,9 +500,17 @@ const init = () => {
     render();
   });
 
-  expandBtnEl.addEventListener("click", openFullList);
-  closeListBtnEl.addEventListener("click", closeFullList);
-  fullListEl.addEventListener("click", handleBackdropClick);
+  expandBtnEl.addEventListener("click", () => {
+    if (isExpanded) {
+      closeFullList();
+    } else {
+      openFullList();
+    }
+  });
+
+  if (closeListBtnEl) {
+    closeListBtnEl.addEventListener("click", closeFullList);
+  }
 
   // 毎分ぴったり更新するようにスケジュール
   let minutelyIntervalId = null;
@@ -542,6 +582,14 @@ const init = () => {
 };
 
 document.addEventListener("DOMContentLoaded", init);
+
+
+
+
+
+
+
+
 
 
 
