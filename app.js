@@ -93,15 +93,19 @@ let lastRenderState = null;
 let isExpanded = false;
 let lastFullListKey = null;
 
+// 数字を2桁にパディング
 const pad2 = (n) => String(n).padStart(2, "0");
 
+// 時刻文字列を分単位の数値に変換
 const parseMinutes = (t) => {
   const [h, m] = t.split(":").map(Number);
   return h * 60 + m;
 };
 
+// 現在時刻をHH:MM形式で取得
 const formatNow = (d) => `${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
 
+// 分数を「X時間Y分」形式にフォーマット
 const formatRemaining = (minutes) => {
   const safe = Math.max(0, minutes);
   if (safe < 60) return `${safe}分`;
@@ -110,12 +114,14 @@ const formatRemaining = (minutes) => {
   return `${hours}時間${mins}分`;
 };
 
+// 日付モードをDATAキーに変換
 const resolveDayKey = (mode) => {
   if (mode === "weekday") return "weekday";
   if (mode === "saturday") return "saturday";
   return null;
 };
 
+// 現在の曜日から適切な日付モードを決定
 const getDefaultDayMode = (now) => {
   const dow = now.getDay();
   if (dow === 6) return "saturday";
@@ -123,16 +129,19 @@ const getDefaultDayMode = (now) => {
   return "weekday";
 };
 
+// 現在時刻から適切な方向（大学か帰路か）を決定
 const getDefaultDirectionMode = (now) => {
   const minutes = now.getHours() * 60 + now.getMinutes();
   return minutes < DIRECTION_SWITCH_MINUTES ? "toUni" : "fromUni";
 };
 
+// アクティブなボタンの値を取得
 const getActiveValue = (containerEl) => {
   const active = containerEl.querySelector("button.active");
   return active ? active.dataset.value : null;
 };
 
+// コンテナ内のすべてのボタンをアクティブ状態から外す
 const clearActiveValue = (containerEl) => {
   const buttons = Array.from(containerEl.querySelectorAll("button"));
   buttons.forEach((button) => {
@@ -141,6 +150,7 @@ const clearActiveValue = (containerEl) => {
   });
 };
 
+// ボタンをアクティブに設定
 const setActiveValue = (containerEl, value) => {
   const buttons = Array.from(containerEl.querySelectorAll("button"));
   let selected = null;
@@ -162,6 +172,7 @@ const setActiveValue = (containerEl, value) => {
   return selected;
 };
 
+// 路線タブのボタンを動的に生成
 const buildRouteTabs = (routes, selectedRoute) => {
   routeTabsEl.innerHTML = "";
   routes.forEach((route) => {
@@ -176,14 +187,18 @@ const buildRouteTabs = (routes, selectedRoute) => {
   return setActiveValue(routeTabsEl, selectedRoute);
 };
 
+// アクティブな日付モードを取得
 const getDayMode = (now) => getActiveValue(dayTabsEl) || getDefaultDayMode(now);
+// アクティブな方向モードを取得
 const getDirectionMode = () => getActiveValue(directionTabsEl) || "toUni";
 
+// 指定条件の時刻表データを取得
 const getTimes = (dayKey, direction, route) => {
   if (!dayKey) return [];
   return DATA[dayKey][direction][route] || [];
 };
 
+// 日付・方向の変更に応じて路線タブを更新
 const updateRoutes = (now = new Date()) => {
   const dayMode = getDayMode(now);
   const dayKey = resolveDayKey(dayMode);
@@ -196,6 +211,7 @@ const updateRoutes = (now = new Date()) => {
   return { dayMode, dayKey, direction, route: resolvedRoute };
 };
 
+// 次3便のリストをレンダリング
 const renderUpcomingList = (times, nowMinutes) => {
   if (!times.length) {
     upcomingListEl.innerHTML = '<div class="mini-empty">--</div>';
@@ -215,8 +231,10 @@ const renderUpcomingList = (times, nowMinutes) => {
     .join("");
 };
 
+// 現在の状態を一意のキーに変換
 const makeStateKey = (state) => `${state.dayMode}|${state.direction}|${state.route}`;
 
+// 全便一覧を時間帯別にレンダリング
 const buildFullList = (state, forceScroll) => {
   const previousScroll = fullListBodyEl.scrollTop;
   const dayLabel = DAY_LABELS[state.dayMode] || "日曜";
@@ -270,6 +288,7 @@ const buildFullList = (state, forceScroll) => {
   }
 };
 
+// 全便一覧モーダルを開く
 const openFullList = () => {
   if (!lastRenderState) {
     render();
@@ -286,6 +305,7 @@ const openFullList = () => {
   }
 };
 
+// 全便一覧モーダルを閉じる
 const closeFullList = () => {
   isExpanded = false;
   fullListEl.classList.remove("open");
@@ -294,6 +314,14 @@ const closeFullList = () => {
   document.body.classList.remove("modal-open");
 };
 
+// モーダル背景クリック時に一覧を閉じる
+const handleBackdropClick = (event) => {
+  if (event.target === fullListEl) {
+    closeFullList();
+  }
+};
+
+// 画面全体をレンダリング
 const render = () => {
   const now = new Date();
   const dayMode = getDayMode(now);
@@ -359,6 +387,7 @@ const render = () => {
   }
 };
 
+// 初期化処理とイベントリスナー設定
 const init = () => {
   const now = new Date();
   const defaultDay = getDefaultDayMode(now);
@@ -396,6 +425,7 @@ const init = () => {
 
   expandBtnEl.addEventListener("click", openFullList);
   closeListBtnEl.addEventListener("click", closeFullList);
+  fullListEl.addEventListener("click", handleBackdropClick);
 
   // 毎分ぴったり更新するようにスケジュール
   let minutelyIntervalId = null;

@@ -15,7 +15,7 @@ body {
   margin: 0;
   font-family: "Roboto", "Noto Sans JP", sans-serif;
   color: var(--ink);
-  background: linear-gradient(135deg, #eaf1ef 0%, #f7f2ec 100%);
+  background: var(--bg);
 }
 
 body.modal-open {
