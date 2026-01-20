@@ -302,8 +302,6 @@ const buildFullList = (state, forceScroll) => {
   const dayLabel = DAY_LABELS[state.dayMode] || "日曜";
   const directionLabel = DIRECTION_LABELS[state.direction] || "";
 
-  // fullListSubEl.textContent = `${dayLabel} / ${directionLabel} / ${state.route}`;
-
   if (!state.dayKey) {
     fullListBodyEl.innerHTML = '<div class="full-empty">日曜・祝日のデータは未登録です</div>';
     return;
@@ -340,11 +338,21 @@ const buildFullList = (state, forceScroll) => {
   fullListBodyEl.innerHTML = html;
 
   if (forceScroll) {
-    const items = Array.from(fullListBodyEl.querySelectorAll(".full-item"));
-    const nextIndex = items.findIndex((item) => item.classList.contains("is-next"));
-    const targetIndex = nextIndex >= 0 ? Math.max(0, nextIndex - 3) : 0;
-    const targetEl = items[targetIndex];
-    fullListBodyEl.scrollTop = targetEl ? targetEl.offsetTop : 0;
+    // DOM更新後のレイアウト計算を待つ
+    requestAnimationFrame(() => {
+      const items = Array.from(fullListBodyEl.querySelectorAll(".full-item"));
+      const nextIndex = items.findIndex((item) => item.classList.contains("is-next"));
+      if (nextIndex >= 0) {
+        const targetEl = items[nextIndex];
+        const scrollPos = targetEl.offsetTop;
+        
+        // .full-controls の高さを考慮してオフセット
+        const controlsEl = document.querySelector(".full-controls");
+        const controlsHeight = controlsEl ? controlsEl.offsetHeight : 0;
+        
+        fullListBodyEl.scrollTop = scrollPos - controlsHeight - 60;
+      }
+    });
   } else {
     fullListBodyEl.scrollTop = previousScroll;
   }

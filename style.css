@@ -112,6 +112,7 @@ select {
   padding: 8px 12px;
   border-radius: 999px;
   font-size: 14px;
+  font-weight: 400;
   cursor: pointer;
   transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }
@@ -175,7 +176,7 @@ select {
 
 .time {
   font-size: 40px;
-  font-weight: 700;
+  font-weight: 800;
   color: var(--accent);
 }
 
@@ -193,6 +194,7 @@ select {
 .mini-list {
   display: grid;
   gap: 10px;
+  margin-top: 6px;
 }
 
 .mini-item {
@@ -203,7 +205,7 @@ select {
 
 .mini-time {
   font-size: 22px;
-  font-weight: 700;
+  font-weight: 800;
   color: var(--ink);
 }
 
@@ -271,7 +273,12 @@ select {
   border-bottom: 1px solid #e1e7f0;
 }
 .full-controls {
-  padding: 0 0 12px;
+  padding: 0px 0px 16px 8px;
+  position: sticky;
+  top: 0;
+  background: var(--card);
+  border-bottom: 1px solid #e1e7f0;
+  z-index: 10;
 }
 
 .full-title {
@@ -298,6 +305,7 @@ select {
 .full-body {
   padding: 10px 16px 16px;
   overflow-y: auto;
+  max-height: 60vh;
 }
 
 .full-hour {
