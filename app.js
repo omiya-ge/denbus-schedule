@@ -48,6 +48,7 @@
       ],
       "北坂戸駅": ["09:06", "09:40", "10:26", "11:48", "12:16", "13:16", "14:16", "15:54"],
       "熊谷駅": ["08:20", "10:00", "12:30"],
+      "鴻巣駅（高坂経由）": [],
       "鴻巣駅（高坂経由）": []
     },
     fromUni: {
@@ -60,6 +61,35 @@
       "北坂戸駅": ["10:14", "11:36", "12:04", "13:04", "14:04", "15:42", "16:25", "17:26", "18:40"],
       "熊谷駅": ["11:45", "15:30", "17:20", "19:10"],
       "鴻巣駅（高坂経由）": ["18:10"]
+    }
+  },
+  vacationWeekday: {
+    toUni: {
+      "高坂駅": [
+        "08:15", "08:28", "08:42", "08:59", "09:14", "09:21", "09:30", "09:43", "09:58", "10:12",
+        "10:27", "10:42", "10:59", "11:07", "11:22", "11:37", "11:52", "12:08", "12:28", "12:49",
+        "13:08", "13:28", "13:49", "14:08", "14:28", "14:49", "15:08", "15:28", "15:48", "16:08",
+        "16:38", "16:58", "17:05", "17:21", "17:51", "18:07", "18:35"
+      ],
+      "北坂戸駅": [
+        "08:47", "09:28", "10:39", "11:18", "12:16", "13:15", "14:15", "15:15", "16:13"
+      ],
+      "熊谷駅": ["08:20", "10:00", "12:30"],
+      "鴻巣駅（高坂経由）": []
+    },
+    fromUni: {
+      "高坂駅": [
+        "09:43", "10:12", "10:22", "10:42", "10:52", "11:02", "11:22", "11:42", "11:52", "12:12",
+        "12:32", "12:52", "13:12", "13:32", "13:52", "14:12", "14:32", "14:52", "15:12", "15:30",
+        "15:54", "16:10", "16:24", "16:40", "16:55", "17:10", "17:24", "17:40", "17:54", "18:10",
+        "18:25", "18:40", "18:55", "19:09", "19:25", "19:40", "19:54", "20:10", "20:25", "20:40",
+        "21:09"
+      ],
+      "北坂戸駅": [
+        "10:27", "11:06", "12:04", "13:03", "14:03", "15:03", "16:01", "17:26", "18:11"
+      ],
+      "熊谷駅": ["11:45", "15:30", "17:20", "19:10"],
+      "鴻巣駅（高坂経由）": ["18:10", "18:40"]
     }
   }
 };
@@ -82,11 +112,19 @@ const DIRECTION_SWITCH_MINUTES = 12 * 60 + 30;
 const DAY_LABELS = {
   weekday: "平日",
   saturday: "土曜",
+  vacationWeekday: "休業平日",
   sunday: "日曜"
 };
 const DIRECTION_LABELS = {
   toUni: "大学に行く",
   fromUni: "帰る"
+};
+const VACATION_START = new Date(2026, 0, 22);
+const VACATION_END = new Date(2026, 3, 1);
+
+const isVacationDate = (date) => {
+  const d = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  return d >= VACATION_START && d <= VACATION_END;
 };
 
 let lastRenderState = null;
@@ -118,11 +156,13 @@ const formatRemaining = (minutes) => {
 const resolveDayKey = (mode) => {
   if (mode === "weekday") return "weekday";
   if (mode === "saturday") return "saturday";
+  if (mode === "vacationWeekday") return "vacationWeekday";
   return null;
 };
 
 // 現在の曜日から適切な日付モードを決定
 const getDefaultDayMode = (now) => {
+  if (isVacationDate(now)) return "vacationWeekday";
   const dow = now.getDay();
   if (dow === 6) return "saturday";
   if (dow === 0) return "sunday";
@@ -248,7 +288,7 @@ const buildFullList = (state, forceScroll) => {
   }
 
   if (!state.times.length) {
-    fullListBodyEl.innerHTML = '<div class="full-empty">この路線は運休です</div>';
+    fullListBodyEl.innerHTML = '<div class="full-empty">この日は運転がありません</div>';
     return;
   }
 
@@ -356,7 +396,7 @@ const render = () => {
 
   if (!times.length) {
     nextTimeEl.textContent = "--:--";
-    nextMetaEl.textContent = "この路線は運休です";
+    nextMetaEl.textContent = "この日は運転がありません";
     upcomingListEl.innerHTML = '<div class="mini-empty">--</div>';
     notesEl.textContent = "";
     lastRenderState = { dayMode, dayKey, direction, route, times, upcoming, nowMinutes };
@@ -465,5 +505,10 @@ const init = () => {
 };
 
 document.addEventListener("DOMContentLoaded", init);
+
+
+
+
+
 
 

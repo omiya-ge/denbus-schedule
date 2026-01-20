@@ -79,6 +79,7 @@ label {
 .control-label {
   font-size: 13px;
   color: var(--muted);
+  line-height: 1.5 em;
 }
 
 select {
@@ -245,7 +246,7 @@ select {
   justify-content: space-between;
   align-items: center;
   padding: 14px 16px;
-  border-bottom: 1px solid #e5eded;
+  border-bottom: 1px solid #e1e7f0;
 }
 
 .full-title {
@@ -290,7 +291,7 @@ select {
 }
 
 .full-item:hover {
-  background: #eef5f3;
+  background: #e7effb;
   transform: translateX(4px);
 }
 
@@ -313,7 +314,7 @@ select {
 }
 
 .full-item.is-next .full-meta {
-  color: #246c61;
+  color: #1f4e8a;
   font-weight: 600;
 }
 
@@ -330,4 +331,15 @@ select {
   }
 }
 
+
+
+
+
+a {
+  color: #1f4e8a;
+}
+
+a:visited {
+  color: #5291ff;
+}
 
