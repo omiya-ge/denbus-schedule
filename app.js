@@ -140,10 +140,17 @@ const parseMinutes = (t) => {
   return h * 60 + m;
 };
 
-// 現在時刻をHH:MM形式で取得
+// 現在時刻を取得
 const formatNow = (d) => `${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
+const formatNowWithSeconds = (d) => `${pad2(d.getHours())}:${pad2(d.getMinutes())}:${pad2(d.getSeconds())}`;
 
-// 分数を「X時間Y分」形式にフォーマット
+const updateClock = () => {
+  if (!headerClockEl) return;
+  headerClockEl.textContent = formatNowWithSeconds(new Date());
+};
+
+
+// あと何分 を「X時間Y分」形式にフォーマット
 const formatRemaining = (minutes) => {
   const safe = Math.max(0, minutes);
   if (safe < 60) return `${safe}分`;
@@ -169,7 +176,7 @@ const getDefaultDayMode = (now) => {
   return "weekday";
 };
 
-// 現在時刻から適切な方向（大学か帰路か）を決定
+// 現在時刻から適切な方向を決定
 const getDefaultDirectionMode = (now) => {
   const minutes = now.getHours() * 60 + now.getMinutes();
   return minutes < DIRECTION_SWITCH_MINUTES ? "toUni" : "fromUni";
@@ -374,9 +381,7 @@ const render = () => {
     route = updated.route;
   }
 
-  const dayLabel = DAY_LABELS[dayMode] || "日曜";  if (headerClockEl) {
-    headerClockEl.textContent = formatNow(now);
-  }
+  const dayLabel = DAY_LABELS[dayMode] || "日曜";
 
   const times = getTimes(dayKey, direction, route);
   const nowMinutes = now.getHours() * 60 + now.getMinutes();
@@ -482,20 +487,52 @@ const init = () => {
   };
   
   scheduleMinutelyUpdate();
+  // 時計の秒表示を分離して更新
+  let clockIntervalId = null;
+  let clockTimeoutId = null;
+
+  const scheduleClockUpdate = () => {
+    updateClock();
+
+    if (clockIntervalId !== null) {
+      clearInterval(clockIntervalId);
+      clockIntervalId = null;
+    }
+    if (clockTimeoutId !== null) {
+      clearTimeout(clockTimeoutId);
+      clockTimeoutId = null;
+    }
+
+    const now = new Date();
+    const msToNextSecond = 1000 - now.getMilliseconds();
+    clockTimeoutId = setTimeout(() => {
+      updateClock();
+      clockIntervalId = setInterval(updateClock, 1000);
+    }, msToNextSecond);
+  };
+
+  scheduleClockUpdate();
 
   // ページがフォーカスを失ったり戻ったりするときの処理
   document.addEventListener("visibilitychange", () => {
     if (document.hidden) {
-      // ページが非表示になった時は更新を停止
       if (minutelyIntervalId !== null) {
         clearInterval(minutelyIntervalId);
         minutelyIntervalId = null;
       }
+      if (clockIntervalId !== null) {
+        clearInterval(clockIntervalId);
+        clockIntervalId = null;
+      }
+      if (clockTimeoutId !== null) {
+        clearTimeout(clockTimeoutId);
+        clockTimeoutId = null;
+      }
     } else {
-      // ページが表示されたときは再度スケジュール
       if (minutelyIntervalId === null) {
         scheduleMinutelyUpdate();
       }
+      scheduleClockUpdate();
     }
   });
 
@@ -505,6 +542,10 @@ const init = () => {
 };
 
 document.addEventListener("DOMContentLoaded", init);
+
+
+
+
 
 
 
