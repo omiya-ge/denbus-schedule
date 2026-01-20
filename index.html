@@ -1,0 +1,81 @@
+﻿<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#0b665a" />
+  <title>スクールバス時刻表</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <main class="container">
+    <header class="header">
+      <div class="header-top">
+        <h1>電バス時刻表</h1>
+        <div class="clock" id="headerClock">--:--</div>
+      </div>
+    </header>
+    
+    <section class="controls">
+      <div class="control-block">
+        <div class="control-label">日付</div>
+        <div class="tabs" id="dayTabs" role="group" aria-label="日付">
+          <button type="button" data-value="weekday" aria-pressed="false">平日</button>
+          <button type="button" data-value="saturday" aria-pressed="false">土曜</button>
+        </div>
+      </div>
+      <div class="control-block">
+        <div class="control-label">方向</div>
+        <div class="tabs" id="directionTabs" role="group" aria-label="方向">
+          <button type="button" data-value="toUni" aria-pressed="false">大学に行く</button>
+          <button type="button" data-value="fromUni" aria-pressed="false">帰る</button>
+        </div>
+      </div>
+      <div class="control-block">
+        <div class="control-label">駅</div>
+        <div class="tabs" id="routeTabs" role="group" aria-label="駅"></div>
+      </div>
+    </section>
+
+    <section class="card">
+      <button class="expand-btn" id="expandBtn" type="button" aria-expanded="false" aria-controls="fullList">一覧</button>
+      <div class="now" id="now"></div>
+      <div class="next">
+        <div class="label">次のバス</div>
+        <div class="time-row">
+          <div class="time" id="nextTime">--:--</div>
+          <div class="meta meta-strong" id="nextMeta"></div>
+        </div>
+      </div>
+      <div class="upcoming">
+        <div class="label">次の3便</div>
+        <div class="mini-list" id="upcomingList"></div>
+      </div>
+
+      <div class="full-list" id="fullList" aria-hidden="true">
+        <div class="full-header">
+          <div>
+            <div class="full-title">全便一覧</div>
+            <div class="full-sub" id="fullListSub"></div>
+          </div>
+          <button class="close-btn" id="closeListBtn" type="button">閉じる</button>
+        </div>
+        <div class="full-body" id="fullListBody"></div>
+      </div>
+    </section>
+
+    <section class="notes" id="notes"></section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
+
+
+
+

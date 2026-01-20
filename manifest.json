@@ -1,0 +1,8 @@
+﻿{
+  "name": "電バス時刻表",
+  "short_name": "電バス時刻表",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#f2f5f4",
+  "theme_color": "#0b665a"
+}
