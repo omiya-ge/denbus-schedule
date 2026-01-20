@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="_レイヤー_1" data-name="レイヤー 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: #fff;
+      }
+
+      .cls-2 {
+        fill: #504b50;
+      }
+
+      .cls-3 {
+        fill: #3266b1;
+      }
+
+      .cls-4 {
+        fill: #eddfcd;
+      }
+    </style>
+  </defs>
+  <g>
+    <path class="cls-4" d="M463.72,389.59H36.28V71.28c0-13.81,11.19-25,25-25h377.45c13.81,0,25,11.19,25,25v318.31Z"/>
+    <path class="cls-4" d="M354.55,46.28h-209.11v-24.83c0-5.52,4.48-10,10-10h189.11c5.52,0,10,4.48,10,10v24.83Z"/>
+  </g>
+  <g>
+    <path class="cls-2" d="M159.73,393.81h-59.09v84.74c0,5.52,4.48,10,10,10h39.09c5.52,0,10-4.48,10-10v-84.74Z"/>
+    <path class="cls-2" d="M399.36,393.81h-59.09v84.74c0,5.52,4.48,10,10,10h39.09c5.52,0,10-4.48,10-10v-84.74Z"/>
+  </g>
+  <rect class="cls-2" x="60.88" y="70.29" width="378.24" height="221.61" rx="10" ry="10"/>
+  <path class="cls-3" d="M36.28,370.58h427.45v45c0,13.8-11.2,25-25,25H61.28c-13.8,0-25-11.2-25-25v-45h0Z"/>
+  <rect class="cls-3" x="36.28" y="326.14" width="427.45" height="21.89"/>
+  <rect class="cls-4" x="36.28" y="125.48" width="427.45" height="21.89"/>
+  <circle class="cls-1" cx="71.28" cy="405.58" r="20"/>
+  <circle class="cls-1" cx="428.72" cy="405.58" r="20"/>
+</svg>
