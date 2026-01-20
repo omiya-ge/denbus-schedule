@@ -73,7 +73,6 @@ const fullListSubEl = document.getElementById("fullListSub");
 const fullListBodyEl = document.getElementById("fullListBody");
 const closeListBtnEl = document.getElementById("closeListBtn");
 const headerClockEl = document.getElementById("headerClock");
-const nowEl = document.getElementById("now");
 const nextTimeEl = document.getElementById("nextTime");
 const nextMetaEl = document.getElementById("nextMeta");
 const upcomingListEl = document.getElementById("upcomingList");
@@ -307,9 +306,7 @@ const render = () => {
     route = updated.route;
   }
 
-  const dayLabel = DAY_LABELS[dayMode] || "日曜";
-  nowEl.textContent = `現在時刻 ${formatNow(now)} / ${dayLabel}`;
-  if (headerClockEl) {
+  const dayLabel = DAY_LABELS[dayMode] || "日曜";  if (headerClockEl) {
     headerClockEl.textContent = formatNow(now);
   }
 
@@ -416,3 +413,5 @@ const init = () => {
 };
 
 document.addEventListener("DOMContentLoaded", init);
+
+
