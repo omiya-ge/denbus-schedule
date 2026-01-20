@@ -349,14 +349,6 @@ const render = () => {
     renderUpcomingList(upcoming.slice(1, 4), nowMinutes);
   }
 
-  if (direction === "fromUni") {
-    notesEl.textContent = "鴻巣駅行きは高坂駅にも停車します。";
-  } else if (route && route.includes("鴻巣駅")) {
-    notesEl.textContent = "鴻巣駅発は高坂駅を経由します。";
-  } else {
-    notesEl.textContent = "";
-  }
-
   lastRenderState = { dayMode, dayKey, direction, route, times, upcoming, nowMinutes };
 
   if (isExpanded) {
