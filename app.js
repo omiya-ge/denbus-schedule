@@ -397,7 +397,37 @@ const init = () => {
   expandBtnEl.addEventListener("click", openFullList);
   closeListBtnEl.addEventListener("click", closeFullList);
 
-  setInterval(render, 30000);
+  // 毎分ぴったり更新するようにスケジュール
+  let minutelyIntervalId = null;
+  
+  const scheduleMinutelyUpdate = () => {
+    const now = new Date();
+    const secondsUntilNextMinute = 60 - now.getSeconds();
+    const msUntilNextMinute = secondsUntilNextMinute * 1000 - now.getMilliseconds();
+    
+    setTimeout(() => {
+      render();
+      minutelyIntervalId = setInterval(render, 60000);
+    }, msUntilNextMinute);
+  };
+  
+  scheduleMinutelyUpdate();
+
+  // ページがフォーカスを失ったり戻ったりするときの処理
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) {
+      // ページが非表示になった時は更新を停止
+      if (minutelyIntervalId !== null) {
+        clearInterval(minutelyIntervalId);
+        minutelyIntervalId = null;
+      }
+    } else {
+      // ページが表示されたときは再度スケジュール
+      if (minutelyIntervalId === null) {
+        scheduleMinutelyUpdate();
+      }
+    }
+  });
 
   if ("serviceWorker" in navigator) {
     navigator.serviceWorker.register("sw.js");
