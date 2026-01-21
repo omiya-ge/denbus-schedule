@@ -49,7 +49,6 @@
       "北坂戸駅": ["09:06", "09:40", "10:26", "11:48", "12:16", "13:16", "14:16", "15:54"],
       "熊谷駅": ["08:20", "10:00", "12:30"],
       "鴻巣駅（高坂経由）": [],
-      "鴻巣駅（高坂経由）": []
     },
     fromUni: {
       "高坂駅": [
@@ -371,6 +370,7 @@ const openFullList = () => {
   if (timetableCardEl) {
     timetableCardEl.classList.add("list-mode");
   }
+  document.body.classList.add("list-open");
   if (lastRenderState) {
     lastFullListKey = makeStateKey(lastRenderState);
     buildFullList(lastRenderState, true);
@@ -387,6 +387,7 @@ const closeFullList = () => {
   if (timetableCardEl) {
     timetableCardEl.classList.remove("list-mode");
   }
+  document.body.classList.remove("list-open");
 };
 
 // 画面全体をレンダリング
