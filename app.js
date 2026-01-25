@@ -175,10 +175,10 @@ const getDefaultDayMode = (now) => {
     checkDate.setDate(checkDate.getDate() + 1);
   }
   
-  if (isVacationDate(checkDate)) return "vacationWeekday";
   const dow = checkDate.getDay();
   if (dow === 6) return "saturday";
   if (dow === 0) return "sunday";
+  if (isVacationDate(checkDate)) return "vacationWeekday";
   return "weekday";
 };
 
