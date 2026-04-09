@@ -21,7 +21,10 @@
           <img src="src/denbus_logo.svg" alt="電バス" class="brand-logo" />
           <h1>電バス時刻表</h1>
         </div>
-        <div class="clock" id="headerClock">--:--</div>
+        <div class="clock" id="headerClock" data-mode="weekday">
+          <div class="clock-main" id="headerDate">--/--(-) --:--:--</div>
+          <div class="clock-schedule" id="headerSchedule" data-mode="weekday">平日ダイヤ</div>
+        </div>
       </div>
     </header>
 
@@ -75,7 +78,8 @@
 
     <section class="notes" id="notes"></section>
 
-    <div class="control-label">情報は<a href="https://www.dendai.ac.jp/access/saitama_hatoyama/school_bus.html">2025年4月1日改正ダイヤ（大学公式サイト）</a>に基づいています。<br>
+    <div class="control-label">情報は<a href="https://www.dendai.ac.jp/access/saitama_hatoyama/school_bus.html">2026年4月1日改正ダイヤ（大学公式サイト）</a>に基づいています。<br>
+      臨時ダイヤ情報: 2026年4月3日 UNIPA掲示<br>
       作った人: <a href="https://x.com/startail____">おみやげ（@startail____）</a>
     </div>
   </main>

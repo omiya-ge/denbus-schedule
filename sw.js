@@ -1,4 +1,4 @@
-﻿const CACHE_NAME = "bus-timetable-v1";
+const CACHE_NAME = "bus-timetable-v2";
 const FILES = [
   ".",
   "index.html",
