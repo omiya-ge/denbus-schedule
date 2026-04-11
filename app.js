@@ -195,6 +195,8 @@ const WINTER_SPECIAL_START = createCalendarDate(2027, 1, 7);
 const WINTER_SPECIAL_END = createCalendarDate(2027, 1, 20);
 const SPRING_BREAK_START = createCalendarDate(2027, 1, 21);
 const SPRING_BREAK_END = createCalendarDate(2027, 3, 31);
+const TEMPORARY_EXTRA_PREVIEW_START = createCalendarDate(2026, 4, 1);
+const TEMPORARY_EXTRA_PREVIEW_END = createCalendarDate(2026, 5, 31);
 
 const SUMMER_NO_SERVICE_DATE_KEYS = buildDateKeySet([], [
   [2026, 8, 7, 2026, 8, 17]
@@ -251,12 +253,18 @@ const hasTemporaryEntries = (entries) => entries.some((entry) => entry.isTempora
 
 const isTemporaryExtraDate = (date) => TEMPORARY_EXTRA_DATE_KEYS.has(formatDateKey(date));
 
-const shouldAppendTemporaryExtra = (dayKey, date, direction, route) =>
-  Boolean(date) &&
+const canShowTemporaryExtra = (dayKey, direction, route) =>
   dayKey === "weekday" &&
   direction === TEMPORARY_EXTRA_DIRECTION &&
-  route === TEMPORARY_EXTRA_ROUTE &&
-  isTemporaryExtraDate(date);
+  route === TEMPORARY_EXTRA_ROUTE;
+
+const isTemporaryExtraPreviewPeriod = (date) =>
+  Boolean(date) && isDateInRange(date, TEMPORARY_EXTRA_PREVIEW_START, TEMPORARY_EXTRA_PREVIEW_END);
+
+const shouldAppendTemporaryExtra = (dayKey, date, direction, route, includePreview = false) =>
+  Boolean(date) &&
+  canShowTemporaryExtra(dayKey, direction, route) &&
+  (isTemporaryExtraDate(date) || (includePreview && isTemporaryExtraPreviewPeriod(date)));
 
 const sortTimeEntries = (entries) =>
   [...entries].sort((a, b) => {
@@ -274,6 +282,11 @@ const parseMinutes = (t) => {
 // 現在時刻を取得
 const formatNow = (d) => `${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
 const formatNowWithSeconds = (d) => `${pad2(d.getHours())}:${pad2(d.getMinutes())}:${pad2(d.getSeconds())}`;
+const formatNoServiceMessage = (isNextDay) => (isNextDay ? "明日は運休です" : "今日は運休です");
+const getTemporaryExtraNotice = (date) => {
+  if (!isTemporaryExtraPreviewPeriod(date)) return "";
+  return "5月末まで、平日は高坂駅発大学行き便で増便があります（* のついた便）。詳細はUNIPAの掲示をご確認ください。";
+};
 
 const createScheduleInfo = (dayMode) => ({
   dayMode,
@@ -369,6 +382,11 @@ const getDefaultDayMode = (now) => {
   return getScheduleInfo(getScheduleDate(now)).dayMode;
 };
 
+const getDefaultSelectableDayMode = (now) => {
+  const defaultDayMode = getDefaultDayMode(now);
+  return defaultDayMode === "sunday" ? "weekday" : defaultDayMode;
+};
+
 // 現在時刻から適切な方向を決定
 const getDefaultDirectionMode = (now) => {
   // 22時以降は翌日のダイヤなので「大学に行く」を返す
@@ -432,15 +450,15 @@ const buildRouteTabs = (routes, selectedRoute) => {
 };
 
 // アクティブな日付モードを取得
-const getDayMode = (now) => getActiveValue(dayTabsEl) || getDefaultDayMode(now);
+const getDayMode = (now) => getActiveValue(dayTabsEl) || getDefaultSelectableDayMode(now);
 // アクティブな方向モードを取得
 const getDirectionMode = () => getActiveValue(directionTabsEl) || "toUni";
 
 // 指定条件の時刻表データを取得
-const getTimes = (dayKey, direction, route, date = null) => {
+const getTimes = (dayKey, direction, route, date = null, includeTemporaryPreview = false) => {
   if (!dayKey) return [];
   const baseEntries = (DATA[dayKey][direction][route] || []).map((time) => createTimeEntry(time));
-  if (!shouldAppendTemporaryExtra(dayKey, date, direction, route)) {
+  if (!shouldAppendTemporaryExtra(dayKey, date, direction, route, includeTemporaryPreview)) {
     return baseEntries;
   }
 
@@ -498,7 +516,7 @@ const buildFullList = (state, forceScroll) => {
   fullListSubEl.textContent = `${dayLabel} / ${directionLabel} / ${state.route}${temporaryLabel}`;
 
   if (!state.dayKey) {
-    fullListBodyEl.innerHTML = '<div class="full-empty">日曜・祝日のデータは未登録です</div>';
+    fullListBodyEl.innerHTML = '<div class="full-empty">今日は運休です</div>';
     return;
   }
 
@@ -546,7 +564,7 @@ const buildFullList = (state, forceScroll) => {
         const controlsEl = document.querySelector(".full-controls");
         const controlsHeight = controlsEl ? controlsEl.offsetHeight : 0;
         
-        fullListBodyEl.scrollTop = scrollPos - controlsHeight - 60;
+        fullListBodyEl.scrollTop = scrollPos - controlsHeight - 80;
       }
     });
   } else {
@@ -627,7 +645,7 @@ const render = () => {
 
   if (!actualDayKey) {
     nextTimeEl.textContent = "--:--";
-    nextMetaEl.textContent = "日曜・祝日のデータは未登録です";
+    nextMetaEl.textContent = formatNoServiceMessage(isNextDay);
     upcomingListEl.innerHTML = '<div class="mini-empty">--</div>';
     notesEl.textContent = "";
   } else if (!timesForNext.length) {
@@ -655,14 +673,10 @@ const render = () => {
     nextTimeEl.classList.remove("is-temporary");
   }
 
-  if (hasTemporaryNext) {
-    notesEl.textContent = `${formatDateLabel(scheduleDate)} は臨時増便日です。* は高坂駅発大学行きの臨時増便です。`;
-  } else {
-    notesEl.textContent = "";
-  }
+  notesEl.textContent = getTemporaryExtraNotice(scheduleDate);
 
   // 一覧表示用のデータ（ユーザーが選択した日付ベース）
-  const timesForList = getTimes(selectedDayKey, direction, route, scheduleDate);
+  const timesForList = getTimes(selectedDayKey, direction, route, scheduleDate, true);
   const nowMinutesForList = now.getHours() * 60 + now.getMinutes();
   const upcomingForList = timesForList.filter((entry) => parseMinutes(getEntryTime(entry)) >= nowMinutesForList);
 
@@ -688,12 +702,7 @@ const render = () => {
 // 初期化処理とイベントリスナー設定
 const init = () => {
   const now = new Date();
-  const defaultDay = getDefaultDayMode(now);
-  if (defaultDay === "sunday") {
-    clearActiveValue(dayTabsEl);
-  } else {
-    setActiveValue(dayTabsEl, defaultDay);
-  }
+  setActiveValue(dayTabsEl, getDefaultSelectableDayMode(now));
   setActiveValue(directionTabsEl, getDefaultDirectionMode(now));
   updateRoutes(now);
   render();
@@ -798,7 +807,17 @@ const init = () => {
   });
 
   if ("serviceWorker" in navigator) {
-    navigator.serviceWorker.register("sw.js");
+    let hasReloadedForNewWorker = false;
+
+    navigator.serviceWorker.addEventListener("controllerchange", () => {
+      if (hasReloadedForNewWorker) return;
+      hasReloadedForNewWorker = true;
+      window.location.reload();
+    });
+
+    navigator.serviceWorker.register("sw.js").then((registration) => {
+      registration.update();
+    });
   }
 };
 
