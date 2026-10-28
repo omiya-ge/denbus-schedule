@@ -1,4 +1,4 @@
-const CACHE_NAME = "bus-timetable-v3";
+const CACHE_NAME = "bus-timetable-v4";
 const APP_SHELL_FILES = [
   ".",
   "index.html",
@@ -6,7 +6,12 @@ const APP_SHELL_FILES = [
   "app.js",
   "manifest.json",
   "src/favicon.ico",
-  "src/denbus_logo.svg"
+  "src/denbus_logo.svg",
+  "src/icons/icon-192.png",
+  "src/icons/icon-512.png",
+  "src/icons/maskable-192.png",
+  "src/icons/maskable-512.png",
+  "src/icons/apple-touch-icon.png"
 ];
 
 self.addEventListener("install", (event) => {
