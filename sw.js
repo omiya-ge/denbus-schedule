@@ -9,8 +9,6 @@ const APP_SHELL_FILES = [
   "src/denbus_logo.svg",
   "src/icons/icon-192.png",
   "src/icons/icon-512.png",
-  "src/icons/maskable-192.png",
-  "src/icons/maskable-512.png",
   "src/icons/apple-touch-icon.png"
 ];
 
