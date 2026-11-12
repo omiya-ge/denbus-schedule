@@ -807,17 +807,7 @@ const init = () => {
   });
 
   if ("serviceWorker" in navigator) {
-    let hasReloadedForNewWorker = false;
-
-    navigator.serviceWorker.addEventListener("controllerchange", () => {
-      if (hasReloadedForNewWorker) return;
-      hasReloadedForNewWorker = true;
-      window.location.reload();
-    });
-
-    navigator.serviceWorker.register("sw.js").then((registration) => {
-      registration.update();
-    });
+    navigator.serviceWorker.register("sw.js");
   }
 };
 
